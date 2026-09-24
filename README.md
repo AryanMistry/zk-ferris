@@ -1,5 +1,7 @@
 # zk-ferris
 
+Read the full writeup here: [zk-ferris writeup](https://www.aryanmistry.com/posts/zk-starks-from-scratch/)
+
 A STARK proof system built from scratch in Rust with finite field, NTT, FRI, Merkle
 commitments, a Fiat-Shamir transcript, AIR constraints, and a DEEP-ALI-style
 composition polynomial proving correct execution of a small register VM's program.
