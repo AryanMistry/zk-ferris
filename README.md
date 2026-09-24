@@ -1,4 +1,4 @@
-# zk-stark-vm
+# zk-ferris
 
 A STARK proof system built from scratch in Rust with finite field, NTT, FRI, Merkle
 commitments, a Fiat-Shamir transcript, AIR constraints, and a DEEP-ALI-style
@@ -28,7 +28,7 @@ verified:       true
 8192 trace rows (a 32x longer computation) proving takes 38x longer, but
 verification only 2.2x and the proof only 1.8x. 
 
-## What's actually being proven
+## What's being proven
 
 The demo program runs on a small register VM (6 registers, a 2-word memory, 8
 opcodes: `ADD SUB MUL JMP JMPIF LOAD STORE HALT`) and computes `fibonacci(n)` via a
@@ -42,14 +42,13 @@ starting from the VM's fixed reset state with `n` at memory address 0, that reac
 trace (other than only a Merkle root, a handful of out-of-domain evaluations, and FRI query
 openings) and its cost grows logarithmically in the trace length, not linearly.
 
-## On the "zk" in the name
+## Zero Knowledge
 
 Succinctness and zero-knowledge are two different properties, and it's worth being
 precise about which one is here.
 
-**Succinctness** — a verifier much cheaper than re-running the computation — comes from
-FRI and the composition polynomial. That part is real and measurable; see the benchmark
-above.
+**Succinctness** — a verifier much cheaper than re-running the computation which comes from
+FRI and the composition polynomial. 
 
 **Zero-knowledge** — revealing nothing about the witness. With the default 24 queries that's ~50 points, so
 for any trace shorter than ~50 rows the trace polynomials were *fully reconstructable
@@ -96,8 +95,7 @@ poly.rs          Dense polynomials: eval, multiply (naive + NTT), long division,
 ntt.rs            NTT/INTT over Goldilocks roots of unity, subgroup interpolation,
                   coset low-degree extension.
 merkle.rs         Merkle tree over field-element leaves, domain-separated hashing.
-transcript.rs      Fiat-Shamir transcript (absorb / squeeze) — the non-interactivity
-                   mechanism every later phase depends on.
+transcript.rs      Fiat-Shamir transcript (absorb / squeeze)
 fri.rs              FRI: commit (fold + Merkle-commit each layer) and query phases,
                     prover and verifier.
 air.rs               The `Air` trait: transition + boundary constraints, and a direct
@@ -118,24 +116,6 @@ examples/
   benchmark.rs          Scaling sweep + the cost of blinding; writes benchmark.svg.
 ```
 
-
-
-## Deliberate scope decisions
-
-A few things were consciously left out, each documented in more detail at its point of
-use in the code:
-
-- **Instruction fetch** is bound to the specific public program via a *direct one-hot
-  lookup* (`vm/constraints.rs`) rather than a randomized permutation/lookup argument.
-  For a program this small (a handful of instructions), that's both simpler and
-  stronger which is an exact identity rather than a probabilistic check with its own
-  soundness-error budget. A much larger table (general-purpose RAM, range checks) is
-  where a real lookup argument (Plookup/LogUp-style) would earn its keep instead.
-- **Memory** is modeled as a small, fixed-width set of trace columns (2 words) rather
-  than through a separate memory-consistency argument. 
-- **No calibrated target security level.** `StarkConfig::toy()`'s FRI rate and query
-  count are sized to keep proof generation fast for a demo, not derived from a target
-  bit-security budget the way a production system's parameters would be.
 
 
 ## Verification approach
